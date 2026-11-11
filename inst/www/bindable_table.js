@@ -145,9 +145,6 @@
       // Build table header
       let thHtml = `
         <th class="bindable-col-handle" title="Drag to reorder"></th>
-        <th class="bindable-col-select" title="Select row">
-          <input type="checkbox" class="bindable-select-all" title="Select all rows" />
-        </th>
       `;
 
       for (const colId of Object.keys(this.schema)) {
@@ -165,7 +162,7 @@
 
     render() {
       if (this.rows.length === 0) {
-        const totalCols = Object.keys(this.schema).length + (this.enableGroups ? 3 : 2);
+        const totalCols = Object.keys(this.schema).length + (this.enableGroups ? 2 : 1);
         this.tbodyEl.innerHTML = `
           <tr>
             <td colspan="${totalCols}" class="bindable-empty-state">
@@ -278,14 +275,7 @@
           `;
         }
 
-        // 2. Row Select Checkbox
-        html += `
-          <td class="bindable-col-select">
-            <input type="checkbox" class="bindable-row-select-box" data-index="${i}" ${isSelected ? 'checked' : ''} />
-          </td>
-        `;
-
-        // 3. Schema-Defined Columns
+        // 2. Schema-Defined Columns
         for (const colId of Object.keys(this.schema)) {
           const colDef = this.schema[colId];
           const val = row[colId] !== undefined ? row[colId] : colDef.default;
@@ -379,13 +369,6 @@
       if (btnUngroup) {
         btnUngroup.disabled = !this.canUngroupSelection();
       }
-
-      // Update select-all checkbox
-      const selectAllBox = this.container.querySelector('.bindable-select-all');
-      if (selectAllBox) {
-        selectAllBox.checked = (this.rows.length > 0 && selCount === this.rows.length);
-        selectAllBox.indeterminate = (selCount > 0 && selCount < this.rows.length);
-      }
     }
 
     canGroupSelection() {
@@ -452,32 +435,7 @@
         }
       });
 
-      // Select All Checkbox
-      this.container.addEventListener('change', (e) => {
-        if (e.target.classList.contains('bindable-select-all')) {
-          if (e.target.checked) {
-            this.selectedIndices = new Set(this.rows.map((_, i) => i));
-          } else {
-            this.selectedIndices.clear();
-          }
-          this.render();
-        }
-      });
-
-      // Row Selection Checkbox
-      this.container.addEventListener('change', (e) => {
-        if (e.target.classList.contains('bindable-row-select-box')) {
-          const idx = parseInt(e.target.getAttribute('data-index'), 10);
-          if (e.target.checked) {
-            this.selectedIndices.add(idx);
-          } else {
-            this.selectedIndices.delete(idx);
-          }
-          this.render();
-        }
-      });
-
-      // Shift-click / Drag-Select Range on Row Selection Checkboxes
+      // Shift-click / Drag-Select Range on Rows
       this.container.addEventListener('mousedown', (e) => {
         const row = e.target.closest('.bindable-row');
         if (!row || e.target.closest('input') || e.target.closest('select') || e.target.closest('button')) return;

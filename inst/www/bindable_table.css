@@ -274,19 +274,6 @@
   border-bottom: 2px solid var(--bt-accent-primary) !important;
 }
 
-/* Row Selector Checkbox Cell */
-.bindable-col-select {
-  width: 26px;
-  text-align: center;
-}
-
-.bindable-row-select-box {
-  cursor: pointer;
-  accent-color: var(--bt-accent-primary);
-  width: 14px;
-  height: 14px;
-}
-
 /* Custom Checkbox for 'Use' Column */
 .bindable-cell-use {
   text-align: center;
