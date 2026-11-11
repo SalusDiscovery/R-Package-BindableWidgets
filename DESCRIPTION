@@ -1,0 +1,30 @@
+Package: BindableWidgets
+Type: Package
+Title: Two-Way Bindable UI Widgets and Reactive App State Management for Shiny
+Version: 0.1.0
+Author: Jay Warrick [aut, cre]
+Maintainer: Jay Warrick <jay.warrick@gmail.com>
+Description: Provides two-way reactive-bound inputs (numericInput2, textInput2, 
+    checkboxInput2, selectInput2, sliderInput2), an interactive tabular sequencer 
+    (bindableTableInput) with row grouping, repeats, and drag-and-drop reordering, 
+    and a unified parameter manager (bind_all_settings, save_settings, load_settings, 
+    export_settings, import_settings, rvsToList, setWidgetState) for robust Shiny 
+    application state monitoring, persistence, and reloading.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    shiny (>= 1.7.0),
+    htmltools (>= 0.5.0),
+    data.table (>= 1.14.0),
+    jsonlite (>= 1.8.0)
+Suggests:
+    shinyjs,
+    shinythemes,
+    later,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+URL: https://github.com/jaywarrick/R-Package-BindableWidgets
+BugReports: https://github.com/jaywarrick/R-Package-BindableWidgets/issues
+Config/roxygen2/version: 8.1.1

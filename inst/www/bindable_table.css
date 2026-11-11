@@ -1,0 +1,451 @@
+/* ==========================================================================
+   Bindable Table Widget Stylesheet (Theme-Adaptive & Spacelab Compatible)
+   Author: Jay Warrick / Salus Team
+   ========================================================================== */
+
+:root {
+  --bt-bg-widget: #ffffff;
+  --bt-bg-card: #ffffff;
+  --bt-bg-row-hover: #f5f8fa;
+  --bt-bg-selected: rgba(49, 126, 172, 0.12);
+  --bt-border-selected: #317EAC;
+  --bt-border-subtle: #dce4ec;
+  --bt-border-mid: #cbd5e1;
+  --bt-text-primary: #2C3E50;
+  --bt-text-secondary: #5a738e;
+  --bt-text-muted: #95a5a6;
+  --bt-accent-primary: #317EAC;
+  --bt-accent-hover: #23527c;
+  --bt-danger-bg: rgba(217, 83, 79, 0.1);
+  --bt-danger-text: #d9534f;
+  --bt-success-bg: rgba(92, 184, 92, 0.1);
+  --bt-success-text: #5cb85c;
+  --bt-group-bracket-color: #317EAC;
+  --bt-group-bg: rgba(49, 126, 172, 0.03);
+}
+
+.bindable-table-widget {
+  background: var(--bt-bg-widget);
+  border: 1px solid var(--bt-border-subtle);
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: inherit;
+  color: var(--bt-text-primary);
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.bindable-table-label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bt-text-primary);
+  margin-bottom: 2px;
+}
+
+/* Toolbar */
+.bindable-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bt-border-subtle);
+}
+
+.bindable-table-toolbar-left,
+.bindable-table-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bindable-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--bt-border-subtle);
+  background: #ffffff;
+  color: var(--bt-text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bindable-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: var(--bt-text-primary);
+}
+
+.bindable-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bindable-btn.btn-primary {
+  background: var(--bt-accent-primary);
+  border-color: var(--bt-accent-primary);
+  color: #ffffff;
+}
+
+.bindable-btn.btn-primary:hover:not(:disabled) {
+  background: var(--bt-accent-hover);
+  border-color: var(--bt-accent-hover);
+  color: #ffffff;
+}
+
+.bindable-btn.btn-danger {
+  color: var(--bt-danger-text);
+  border-color: rgba(217, 83, 79, 0.3);
+  background: #ffffff;
+}
+
+.bindable-btn.btn-danger:hover:not(:disabled) {
+  background: var(--bt-danger-bg);
+  border-color: var(--bt-danger-text);
+}
+
+.bindable-table-stats-badge {
+  font-size: 11px;
+  color: var(--bt-text-secondary);
+  background: #f8fafc;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--bt-border-subtle);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Table Scroll Wrapper */
+.bindable-table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--bt-border-subtle);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.bindable-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.bindable-table th {
+  background: #f8fafc;
+  color: var(--bt-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--bt-border-subtle);
+  white-space: nowrap;
+}
+
+.bindable-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--bt-border-subtle);
+  vertical-align: middle;
+  transition: background 0.12s ease;
+}
+
+.bindable-row {
+  cursor: default;
+}
+
+/* Logical Unit Alternating Row Shading (rows in the same group share the same shade) */
+.bindable-row.unit-shade-a {
+  background: transparent;
+}
+
+.bindable-row.unit-shade-b {
+  background: rgba(128, 128, 128, 0.045);
+}
+
+.bindable-row:hover {
+  background: rgba(128, 128, 128, 0.09) !important;
+}
+
+/* Selected row state */
+.bindable-row.row-selected {
+  background: var(--bt-bg-selected, rgba(49, 126, 172, 0.18)) !important;
+}
+
+.bindable-row.row-selected td {
+  border-bottom-color: rgba(49, 126, 172, 0.35);
+}
+
+/* Grouped row subtle border indicator */
+.bindable-row.is-grouped {
+  /* Inherits logical unit shade cleanly */
+}
+  background: var(--bt-group-bg);
+}
+
+.bindable-row.row-disabled {
+  opacity: 0.55;
+  filter: grayscale(40%);
+}
+
+.bindable-row.row-disabled td input[type="text"],
+.bindable-row.row-disabled td input[type="number"] {
+  color: var(--bt-text-muted);
+}
+
+/* ==========================================================================
+   Drag Handle: Clean, Muted Texture Dots (Vertically Centered)
+   No bounding box or text for grouped rows!
+   ========================================================================== */
+.bindable-col-handle {
+  width: 32px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 4px;
+  color: var(--bt-text-muted);
+}
+
+.bindable-col-handle.bindable-group-handle {
+  vertical-align: middle !important;
+  text-align: center !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 4px !important;
+}
+
+.bindable-drag-handle {
+  cursor: grab;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: var(--bt-text-muted);
+  font-size: 14px;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.bindable-drag-handle:hover {
+  color: var(--bt-accent-primary);
+  background: transparent;
+}
+
+.bindable-drag-handle:active {
+  cursor: grabbing;
+}
+
+.bindable-drag-dots {
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.65;
+}
+
+.bindable-drag-handle:hover .bindable-drag-dots {
+  opacity: 1;
+}
+
+.bindable-row.is-dragging {
+  opacity: 0.35;
+  background: rgba(49, 126, 172, 0.2) !important;
+}
+
+.bindable-row.drag-over-top td {
+  border-top: 2px solid var(--bt-accent-primary) !important;
+}
+
+.bindable-row.drag-over-bottom td {
+  border-bottom: 2px solid var(--bt-accent-primary) !important;
+}
+
+/* Row Selector Checkbox Cell */
+.bindable-col-select {
+  width: 26px;
+  text-align: center;
+}
+
+.bindable-row-select-box {
+  cursor: pointer;
+  accent-color: var(--bt-accent-primary);
+  width: 14px;
+  height: 14px;
+}
+
+/* Custom Checkbox for 'Use' Column */
+.bindable-cell-use {
+  text-align: center;
+}
+
+.bindable-use-toggle {
+  cursor: pointer;
+  accent-color: #5cb85c;
+  width: 16px;
+  height: 16px;
+}
+
+/* Inline Input Elements (Spacelab Form Control Compatible) */
+.bindable-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid var(--bt-border-subtle);
+  border-radius: 4px;
+  color: var(--bt-text-primary);
+  font-size: 12px;
+  padding: 4px 7px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bindable-input:focus {
+  border-color: var(--bt-accent-primary);
+  box-shadow: 0 0 0 2px rgba(49, 126, 172, 0.2);
+  background: #ffffff;
+}
+
+.bindable-input-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: right;
+}
+
+/* Repeat Group Column & Brackets */
+.bindable-col-repeat {
+  width: 165px;
+  position: relative;
+  vertical-align: middle;
+}
+
+.bindable-group-bracket-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid rgba(49, 126, 172, 0.35);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.bindable-repeat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bt-accent-primary);
+  font-weight: 700;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.bindable-repeat-input {
+  width: 48px;
+  background: #ffffff;
+  border: 1px solid var(--bt-border-mid);
+  border-radius: 4px;
+  color: var(--bt-text-primary);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 4px;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.bindable-btn-ungroup {
+  background: transparent;
+  border: none;
+  color: var(--bt-text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 12px;
+  transition: color 0.15s ease;
+}
+
+.bindable-btn-ungroup:hover {
+  color: var(--bt-danger-text);
+  background: var(--bt-danger-bg);
+}
+
+.bindable-single-row-hint {
+  font-size: 11px;
+  color: var(--bt-text-muted);
+  font-style: italic;
+}
+
+/* Empty Table State */
+.bindable-empty-state {
+  text-align: center;
+  padding: 24px;
+  color: var(--bt-text-muted);
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   Unified Protocol File I/O Bar (Simple Buttons)
+   ========================================================================== */
+.protocol-io-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--bt-border-subtle);
+  border-radius: 6px;
+}
+
+.btn-io-btn {
+  background: #ffffff !important;
+  border: 1px solid var(--bt-border-subtle) !important;
+  color: var(--bt-text-primary) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  text-decoration: none !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-io-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: var(--bt-accent-primary) !important;
+  color: var(--bt-accent-primary) !important;
+  text-decoration: none !important;
+}
+
+.btn-io-btn-warning {
+  background: #ffffff !important;
+  border: 1px solid rgba(240, 173, 78, 0.6) !important;
+  color: #d58512 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-io-btn-warning:hover {
+  background: rgba(240, 173, 78, 0.12) !important;
+  border-color: #d58512 !important;
+  color: #b16c09 !important;
+}
