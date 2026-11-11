@@ -1,7 +1,7 @@
 #' Bindable Table Input Widget
 #'
 #' Creates an interactive tabular sequencer widget that supports cell editing,
-#' contiguous multi-row grouping with repeat counts, drag-and-drop reordering,
+#' optional contiguous multi-row grouping with repeat counts, drag-and-drop reordering,
 #' row duplication, and deletion. The widget seamlessly synchronizes its tabular state
 #' to Shiny inputs and settings managers via two-way reactive binding.
 #'
@@ -13,8 +13,12 @@
 #'     \item \code{type}: Type definition (e.g. \code{logical(0)}, \code{numeric(0)}, \code{character(0)}).
 #'     \item \code{default}: Default value for newly inserted rows.
 #'     \item \code{min}, \code{max}, \code{step}: Optional constraints for numeric columns.
+#'     \item \code{width}: Optional CSS width for the column (e.g. \code{"100px"}).
 #'   }
 #' @param data Initial data as a \code{data.frame} or \code{data.table}.
+#' @param value Alias for \code{data}.
+#' @param allow_grouping Logical; if \code{TRUE} (default), enables multi-row grouping, loop repeats, and group drag handles. If \code{FALSE}, all grouping and repeating functionality is omitted.
+#' @param enable_groups Alias for \code{allow_grouping}.
 #' @param subgroups Optional character vector of setting subgroups this input belongs to.
 #' @param width Width of the widget container (e.g. \code{"100\%"}).
 #' @param height Height of the widget container (optional).
@@ -34,17 +38,26 @@
 #'     speed = list(name = "Speed (\\%)", type = numeric(0), min = 1, max = 100, default = 100),
 #'     hold = list(name = "Hold (s)", type = numeric(0), min = 0.1, default = 1.0)
 #'   )
-#'   bindableTableInput("seq_table", label = "Protocol Steps", columns = cols)
+#'   bindableTableInput("seq_table", label = "Protocol Steps", columns = cols, allow_grouping = TRUE)
 #' }
 bindableTableInput <- function(inputId,
                                label = NULL,
                                columns = NULL,
                                data = NULL,
+                               value = NULL,
+                               allow_grouping = TRUE,
+                               enable_groups = TRUE,
                                subgroups = character(0),
                                width = "100%",
                                height = NULL) {
   # Register widget for automatic state management
   register_input(inputId, "table", subgroups)
+
+  # Resolve data / value alias
+  actual_data <- if (!is.null(value)) value else data
+
+  # Resolve allow_grouping / enable_groups alias
+  is_grouping_allowed <- if (!missing(allow_grouping)) isTRUE(allow_grouping) else isTRUE(enable_groups)
 
   # Fallback default columns if omitted
   if (is.null(columns)) {
@@ -57,21 +70,26 @@ bindableTableInput <- function(inputId,
     )
   }
 
-  norm_data <- normalize_bindable_table_data(data, columns)
+  norm_data <- normalize_bindable_table_data(actual_data, columns)
 
-  # Serialize columns and initial data for HTML embedding
-  col_specs <- lapply(names(columns), function(col_id) {
+  # Serialize columns as a named list matching schema expectations
+  col_specs <- list()
+  for (col_id in names(columns)) {
     col_def <- columns[[col_id]]
-    list(
+    col_specs[[col_id]] <- list(
       id = col_id,
       name = col_def$name %||% col_id,
-      type = if (is.logical(col_def$type)) "logical" else if (is.numeric(col_def$type)) "numeric" else "character",
-      default = col_def$default %||% if (is.logical(col_def$type)) TRUE else if (is.numeric(col_def$type)) 0 else "",
+      type = if (is.logical(col_def$type) || identical(col_def$type, "logical")) "logical"
+             else if (is.numeric(col_def$type) || identical(col_def$type, "numeric")) "numeric"
+             else "character",
+      default = col_def$default %||% if (is.logical(col_def$type) || identical(col_def$type, "logical")) TRUE
+                                     else if (is.numeric(col_def$type) || identical(col_def$type, "numeric")) 0 else "",
       min = col_def$min,
       max = col_def$max,
-      step = col_def$step
+      step = col_def$step,
+      width = col_def$width
     )
-  })
+  }
 
   initial_json <- jsonlite::toJSON(norm_data, dataframe = "rows", auto_unbox = TRUE, null = "null")
   cols_json <- jsonlite::toJSON(col_specs, auto_unbox = TRUE, null = "null")
@@ -90,12 +108,15 @@ bindableTableInput <- function(inputId,
     ),
     htmltools::tags$div(
       id = inputId,
-      class = "bindable-table-container",
+      class = "bindable-table-widget",
       style = style_attr,
-      `data-columns` = cols_json,
-      `data-initial` = initial_json,
-      if (!is.null(label)) htmltools::tags$label(class = "control-label", `for` = inputId, label),
-      htmltools::tags$div(class = "bindable-table-inner")
+      `data-input-id` = inputId,
+      `data-allow-grouping` = if (is_grouping_allowed) "true" else "false",
+      `data-enable-groups` = if (is_grouping_allowed) "true" else "false",
+      if (!is.null(label)) htmltools::tags$label(class = "bindable-table-label", label),
+      htmltools::tags$script(type = "application/json", class = "bindable-table-schema", htmltools::HTML(cols_json)),
+      htmltools::tags$script(type = "application/json", class = "bindable-table-initial-data", htmltools::HTML(initial_json)),
+      htmltools::tags$div(class = "bindable-table-container")
     )
   )
 }
@@ -112,15 +133,12 @@ bindableTableInput <- function(inputId,
 #' @return Invisibly returns `TRUE`.
 #' @export
 updateBindableTableInput <- function(session, inputId, value = NULL, label = NULL) {
-  message_payload <- list()
-  if (!is.null(label)) {
-    message_payload$label <- label
-  }
-  if (!is.null(value)) {
-    norm_val <- normalize_bindable_table_data(value)
-    message_payload$value <- jsonlite::toJSON(norm_val, dataframe = "rows", auto_unbox = TRUE, null = "null")
-  }
-  session$sendCustomMessage(type = paste0("bindableTableUpdate_", inputId), message = message_payload)
+  if (is.null(value)) return(invisible(FALSE))
+  norm_val <- normalize_bindable_table_data(value)
+  session$sendCustomMessage("bindableTable_setValue", list(
+    id = inputId,
+    rows = norm_val
+  ))
   invisible(TRUE)
 }
 

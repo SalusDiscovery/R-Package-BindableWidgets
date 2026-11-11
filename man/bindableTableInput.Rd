@@ -9,6 +9,9 @@ bindableTableInput(
   label = NULL,
   columns = NULL,
   data = NULL,
+  value = NULL,
+  allow_grouping = TRUE,
+  enable_groups = TRUE,
   subgroups = character(0),
   width = "100\%",
   height = NULL
@@ -25,9 +28,16 @@ bindableTableInput(
   \item \code{type}: Type definition (e.g. \code{logical(0)}, \code{numeric(0)}, \code{character(0)}).
   \item \code{default}: Default value for newly inserted rows.
   \item \code{min}, \code{max}, \code{step}: Optional constraints for numeric columns.
+  \item \code{width}: Optional CSS width for the column (e.g. \code{"100px"}).
 }}
 
 \item{data}{Initial data as a \code{data.frame} or \code{data.table}.}
+
+\item{value}{Alias for \code{data}.}
+
+\item{allow_grouping}{Logical; if \code{TRUE} (default), enables multi-row grouping, loop repeats, and group drag handles. If \code{FALSE}, all grouping and repeating functionality is omitted.}
+
+\item{enable_groups}{Alias for \code{allow_grouping}.}
 
 \item{subgroups}{Optional character vector of setting subgroups this input belongs to.}
 
@@ -40,7 +50,7 @@ A Shiny UI widget element.
 }
 \description{
 Creates an interactive tabular sequencer widget that supports cell editing,
-contiguous multi-row grouping with repeat counts, drag-and-drop reordering,
+optional contiguous multi-row grouping with repeat counts, drag-and-drop reordering,
 row duplication, and deletion. The widget seamlessly synchronizes its tabular state
 to Shiny inputs and settings managers via two-way reactive binding.
 }
@@ -56,6 +66,6 @@ if (interactive()) {
     speed = list(name = "Speed (\\\\\%)", type = numeric(0), min = 1, max = 100, default = 100),
     hold = list(name = "Hold (s)", type = numeric(0), min = 0.1, default = 1.0)
   )
-  bindableTableInput("seq_table", label = "Protocol Steps", columns = cols)
+  bindableTableInput("seq_table", label = "Protocol Steps", columns = cols, allow_grouping = TRUE)
 }
 }

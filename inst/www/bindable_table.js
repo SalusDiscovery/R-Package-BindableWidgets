@@ -16,7 +16,8 @@
     constructor(element) {
       this.el = element;
       this.id = element.getAttribute('data-input-id');
-      this.enableGroups = element.getAttribute('data-enable-groups') === 'true';
+      const allowAttr = element.getAttribute('data-allow-grouping') ?? element.getAttribute('data-enable-groups');
+      this.enableGroups = (allowAttr === null || allowAttr === 'true');
       this.container = element.querySelector('.bindable-table-container');
 
       // Load schema and initial data from embedded JSON tags
@@ -233,7 +234,7 @@
         const isSelected = this.selectedIndices.has(i);
         const isDisabled = row.use === false;
         const gid = row._group_id;
-        const isGrouped = Boolean(gid);
+        const isGrouped = Boolean(this.enableGroups && gid);
 
         // Logical unit alternating shading: rows in the same group share the exact same shade
         if (isGrouped) {
@@ -252,10 +253,10 @@
         if (isGrouped) rowClasses.push('is-grouped');
         if (isDisabled) rowClasses.push('row-disabled');
 
-        html += `<tr class="${rowClasses.join(' ')}" data-index="${i}" data-step-id="${row._step_id}" ${gid ? `data-group-id="${gid}"` : ''}>`;
+        html += `<tr class="${rowClasses.join(' ')}" data-index="${i}" data-step-id="${row._step_id}" ${isGrouped ? `data-group-id="${gid}"` : ''}>`;
 
         // 1. Drag Handle Column (Texture dots vertically centered in merged cell for groups)
-        if (gid) {
+        if (isGrouped) {
           const gInfo = groupSpans.get(gid);
           if (gInfo && gInfo.startIndex === i) {
             html += `
@@ -369,7 +370,7 @@
       const btnDup = this.container.querySelector('[data-action="duplicate-row"]');
       const btnDel = this.container.querySelector('[data-action="delete-rows"]');
 
-      if (btnDup) btnDup.disabled = (selCount !== 1);
+      if (btnDup) btnDup.disabled = (selCount === 0);
       if (btnDel) btnDel.disabled = (selCount === 0);
 
       if (btnGroup) {
@@ -762,20 +763,103 @@
     }
 
     duplicateSelectedRow() {
-      if (this.selectedIndices.size !== 1) return;
-      const idx = Array.from(this.selectedIndices)[0];
-      const source = this.rows[idx];
-      if (!source) return;
+      if (this.selectedIndices.size === 0) return;
 
-      const clone = Object.assign({}, source);
-      clone._step_id = this.getNextStepId();
-      clone._group_id = null; // duplicated row starts ungrouped for safety
-      clone._repeats = 1;
-      if (clone.name) clone.name = clone.name + ' (Copy)';
+      const sortedIndices = Array.from(this.selectedIndices).sort((a, b) => a - b);
 
-      this.rows.splice(idx + 1, 0, clone);
+      if (this.enableGroups) {
+        // Check if all selected indices belong to the exact same group
+        const firstRow = this.rows[sortedIndices[0]];
+        const rawGid = firstRow ? firstRow._group_id : null;
+        const isGrouped = rawGid !== null && rawGid !== undefined && rawGid !== '';
+
+        if (isGrouped) {
+          const gid = String(rawGid);
+          const allInSameGroup = sortedIndices.every(i => String(this.rows[i]._group_id) === gid);
+
+          if (allInSameGroup) {
+            // Find full group boundaries in the table
+            let grpStart = sortedIndices[0];
+            while (grpStart > 0 && String(this.rows[grpStart - 1]._group_id) === gid) {
+              grpStart--;
+            }
+            let grpEnd = sortedIndices[sortedIndices.length - 1];
+            while (grpEnd < this.rows.length - 1 && String(this.rows[grpEnd + 1]._group_id) === gid) {
+              grpEnd++;
+            }
+            const fullGrpIndices = [];
+            for (let i = grpStart; i <= grpEnd; i++) fullGrpIndices.push(i);
+
+            const isEntireGroupSelected = (sortedIndices.length === fullGrpIndices.length) &&
+              sortedIndices.every((val, idx) => val === fullGrpIndices[idx]);
+
+            // Case A: Entire group is selected -> duplicate the whole group as a NEW group
+            if (isEntireGroupSelected) {
+              const newGid = this.getNextGroupId();
+              let nextStepId = this.getNextStepId();
+              const clonedGroup = fullGrpIndices.map(i => {
+                const row = this.rows[i];
+                const clone = Object.assign({}, row);
+                clone._step_id = nextStepId++;
+                clone._group_id = newGid;
+                clone._repeats = row._repeats;
+                if (clone.name) clone.name = clone.name + ' (Copy)';
+                return clone;
+              });
+
+              this.rows.splice(grpEnd + 1, 0, ...clonedGroup);
+              this.selectedIndices.clear();
+              for (let i = 0; i < clonedGroup.length; i++) {
+                this.selectedIndices.add(grpEnd + 1 + i);
+              }
+              this.render();
+              this.notifyShiny();
+              return;
+            }
+
+            // Case B: A single row or subset within the group is selected -> duplicate WITHIN the group
+            const lastSelectedIdx = sortedIndices[sortedIndices.length - 1];
+            let nextStepId = this.getNextStepId();
+            const clonedRows = sortedIndices.map(i => {
+              const row = this.rows[i];
+              const clone = Object.assign({}, row);
+              clone._step_id = nextStepId++;
+              clone._group_id = row._group_id; // Preserve group membership
+              clone._repeats = row._repeats;   // Preserve group repeat count
+              if (clone.name) clone.name = clone.name + ' (Copy)';
+              return clone;
+            });
+
+            this.rows.splice(lastSelectedIdx + 1, 0, ...clonedRows);
+            this.selectedIndices.clear();
+            for (let i = 0; i < clonedRows.length; i++) {
+              this.selectedIndices.add(lastSelectedIdx + 1 + i);
+            }
+            this.render();
+            this.notifyShiny();
+            return;
+          }
+        }
+      }
+
+      // Default / Ungrouped duplication (or when enableGroups is false)
+      const lastSelectedIdx = sortedIndices[sortedIndices.length - 1];
+      let nextStepId = this.getNextStepId();
+      const clonedRows = sortedIndices.map(i => {
+        const row = this.rows[i];
+        const clone = Object.assign({}, row);
+        clone._step_id = nextStepId++;
+        clone._group_id = null;
+        clone._repeats = 1;
+        if (clone.name) clone.name = clone.name + ' (Copy)';
+        return clone;
+      });
+
+      this.rows.splice(lastSelectedIdx + 1, 0, ...clonedRows);
       this.selectedIndices.clear();
-      this.selectedIndices.add(idx + 1);
+      for (let i = 0; i < clonedRows.length; i++) {
+        this.selectedIndices.add(lastSelectedIdx + 1 + i);
+      }
       this.render();
       this.notifyShiny();
     }
@@ -920,10 +1004,17 @@
       if (widgetEl) {
         const instance = instances.get(widgetEl);
         if (instance) {
-          instance.setValue(message.rows);
+          instance.setValue(message.rows || message.value);
         }
       }
     }
   });
+
+  if (typeof window !== 'undefined') {
+    window.BindableTableInstance = BindableTableInstance;
+  }
+  if (typeof global !== 'undefined') {
+    global.BindableTableInstance = BindableTableInstance;
+  }
 
 })();

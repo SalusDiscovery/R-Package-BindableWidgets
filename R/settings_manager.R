@@ -277,3 +277,4 @@ import_settings_upload <- function(session, settings, upload_file, input_types =
   }
   load_settings(session = session, settings = settings, file_path = upload_file$datapath, input_types = input_types)
 }
+

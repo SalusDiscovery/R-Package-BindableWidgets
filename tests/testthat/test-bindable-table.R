@@ -65,3 +65,14 @@ test_that("expand_protocol correctly unrolls contiguous loop groups and repeats"
   expect_equal(expanded$cycle_index[2:7], c(1L, 1L, 2L, 2L, 3L, 3L))
   expect_equal(expanded$total_cycles[2:7], rep(3L, 6))
 })
+
+test_that("bindableTableInput generates proper allow-grouping attributes", {
+  tag_default <- bindableTableInput("tbl1")
+  html_str_def <- as.character(tag_default)
+  expect_true(grepl('data-allow-grouping="true"', html_str_def))
+
+  tag_no_group <- bindableTableInput("tbl2", allow_grouping = FALSE)
+  html_str_no_group <- as.character(tag_no_group)
+  expect_true(grepl('data-allow-grouping="false"', html_str_no_group))
+})
+

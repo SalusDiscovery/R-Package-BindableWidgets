@@ -69,3 +69,4 @@ clear_registry <- function() {
   .registry$subgroups <- list()
   invisible(TRUE)
 }
+

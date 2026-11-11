@@ -49,3 +49,4 @@ test_that("registry registers inputs and maintains subgroups", {
   clear_registry()
   expect_equal(length(get_registered_types()), 0)
 })
+
