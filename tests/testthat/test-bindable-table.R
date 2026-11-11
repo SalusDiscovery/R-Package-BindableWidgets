@@ -31,6 +31,16 @@ test_that("coerce_bindable_table_payload processes list payloads from client", {
   expect_equal(res$`_step_id`, c(1L, 2L))
   expect_equal(res$`_group_id`, c(NA_integer_, 1L))
   expect_equal(res$`_repeats`, c(1L, 5L))
+
+  # Test enveloped payload with rows and _rev timestamp
+  enveloped <- list(
+    rows = client_list,
+    `_rev` = 1731362700000
+  )
+  res_env <- coerce_bindable_table_payload(enveloped)
+  expect_s3_class(res_env, "data.table")
+  expect_equal(nrow(res_env), 2)
+  expect_equal(res_env$`_step_id`, c(1L, 2L))
 })
 
 test_that("expand_protocol correctly unrolls contiguous loop groups and repeats", {

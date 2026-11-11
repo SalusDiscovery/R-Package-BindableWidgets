@@ -14,5 +14,6 @@ A clean \code{data.table}.
 }
 \description{
 Converts JSON or list data delivered from the browser into a strictly typed
-\code{data.table} with integer tracking columns.
+\code{data.table} with integer tracking columns. Unpacks wrapped \code{list(rows = ..., _rev = ...)}
+envelopes automatically.
 }

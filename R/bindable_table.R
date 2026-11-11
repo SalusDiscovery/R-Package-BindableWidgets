@@ -209,7 +209,8 @@ normalize_bindable_table_data <- function(data, columns = NULL) {
 #' Coerce Client Payload from Bindable Table
 #'
 #' Converts JSON or list data delivered from the browser into a strictly typed
-#' \code{data.table} with integer tracking columns.
+#' \code{data.table} with integer tracking columns. Unpacks wrapped \code{list(rows = ..., _rev = ...)}
+#' envelopes automatically.
 #'
 #' @param payload A list or data.frame returned from Shiny's input handler.
 #'
@@ -225,6 +226,18 @@ coerce_bindable_table_payload <- function(payload) {
   }
 
   if (is.list(payload)) {
+    # If payload is wrapped in an envelope: list(rows = [...], _rev = ...)
+    if ("rows" %in% names(payload)) {
+      payload <- payload$rows
+    }
+
+    if (is.null(payload) || length(payload) == 0) {
+      return(normalize_bindable_table_data(NULL))
+    }
+    if (is.data.frame(payload)) {
+      return(normalize_bindable_table_data(payload))
+    }
+
     cleaned_rows <- lapply(payload, function(row) {
       lapply(row, function(val) {
         if (is.null(val) || length(val) == 0) NA else val
@@ -243,10 +256,32 @@ coerce_bindable_table_payload <- function(payload) {
   return(normalize_bindable_table_data(NULL))
 }
 
+#' Dynamically Enable or Disable Grouping on a Bindable Table
+#'
+#' Sends a message to the client browser to show or hide multi-row grouping and repeats
+#' on the specified [bindableTableInput()]. When disabled, group buttons and the repeat column
+#' are hidden, and all steps are treated as single ungrouped rows.
+#'
+#' @param session The Shiny session object.
+#' @param inputId The ID of the `bindableTableInput`.
+#' @param allow_grouping Logical; `TRUE` to enable grouping, `FALSE` to disable.
+#'
+#' @return Invisibly returns `TRUE`.
+#' @export
+setTableGrouping <- function(session, inputId, allow_grouping = TRUE) {
+  session$sendCustomMessage("bindableTable_setAllowGrouping", list(
+    id = inputId,
+    allow_grouping = isTRUE(allow_grouping)
+  ))
+  invisible(TRUE)
+}
+
 # Register Custom Shiny Input Handler so input[[id]] automatically delivers a data.table
 if (requireNamespace("shiny", quietly = TRUE)) {
   tryCatch({
     shiny::registerInputHandler("bindableWidgets.table", function(data, ...) {
+      message("[registerInputHandler bindableWidgets.table] incoming data:")
+      str(data)
       coerce_bindable_table_payload(data)
     }, force = TRUE)
   }, error = function(e) NULL)

@@ -920,9 +920,23 @@
         this.shinyCallback(true);
       }
       if (window.Shiny && Shiny.setInputValue) {
-        Shiny.setInputValue(this.id + ':bindableWidgets.table', this.getValue(), { priority: 'event' });
+        Shiny.setInputValue(this.id, this.getValue(), { priority: 'event' });
       }
       $(this.el).trigger('change');
+    }
+
+    setAllowGrouping(allowed) {
+      this.enableGroups = Boolean(allowed);
+      if (!this.enableGroups) {
+        // Clear grouping info so all steps are treated as single steps
+        for (const r of this.rows) {
+          r._group_id = null;
+          r._repeats = 1;
+        }
+      }
+      this.initDOM();
+      this.render();
+      this.notifyShiny();
     }
 
     getValue() {
@@ -958,6 +972,9 @@
   $.extend(bindableTableBinding, {
     find: function(scope) {
       return $(scope).find('.bindable-table-widget');
+    },
+    getType: function(el) {
+      return 'bindableWidgets.table';
     },
     initialize: function(el) {
       const instance = new BindableTableInstance(el);
@@ -1005,6 +1022,19 @@
         const instance = instances.get(widgetEl);
         if (instance) {
           instance.setValue(message.rows || message.value);
+        }
+      }
+    }
+  });
+
+  // Handle server-side custom message to dynamically toggle grouping
+  Shiny.addCustomMessageHandler('bindableTable_setAllowGrouping', function(message) {
+    if (message && message.id) {
+      const widgetEl = document.getElementById(message.id);
+      if (widgetEl) {
+        const instance = instances.get(widgetEl);
+        if (instance) {
+          instance.setAllowGrouping(message.allow_grouping);
         }
       }
     }
