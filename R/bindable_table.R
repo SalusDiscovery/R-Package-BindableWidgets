@@ -276,13 +276,19 @@ setTableGrouping <- function(session, inputId, allow_grouping = TRUE) {
   invisible(TRUE)
 }
 
-# Register Custom Shiny Input Handler so input[[id]] automatically delivers a data.table
-if (requireNamespace("shiny", quietly = TRUE)) {
-  tryCatch({
+# Register Custom Shiny Input Handler on package load so input[[id]] automatically delivers a data.table
+.onLoad <- function(libname, pkgname) {
+  if (requireNamespace("shiny", quietly = TRUE)) {
     shiny::registerInputHandler("bindableWidgets.table", function(data, ...) {
-      message("[registerInputHandler bindableWidgets.table] incoming data:")
-      str(data)
       coerce_bindable_table_payload(data)
     }, force = TRUE)
-  }, error = function(e) NULL)
+  }
+}
+
+.onAttach <- function(libname, pkgname) {
+  if (requireNamespace("shiny", quietly = TRUE)) {
+    shiny::registerInputHandler("bindableWidgets.table", function(data, ...) {
+      coerce_bindable_table_payload(data)
+    }, force = TRUE)
+  }
 }

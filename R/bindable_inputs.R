@@ -98,8 +98,6 @@ checkboxInput2 <- function(inputId, label, value = FALSE, width = NULL, subgroup
 #' @param value The initial value of the slider.
 #' @param step Specifies the interval between each slider value.
 #' @param round `TRUE` to round all values to the nearest integer.
-#' @param format Deprecated in Shiny, included for compatibility.
-#' @param locale The locale to use for formatting.
 #' @param ticks `FALSE` to hide tick marks, `TRUE` to show them.
 #' @param animate `TRUE` to show a simple animation control.
 #' @param width The width of the input.
@@ -110,21 +108,21 @@ checkboxInput2 <- function(inputId, label, value = FALSE, width = NULL, subgroup
 #' @param timezone Only used if the slider values are POSIXt objects.
 #' @param dragRange This option is used only if it is a slider of numbers with range.
 #' @param subgroups Optional character vector of setting subgroups this input belongs to.
-#' @param ... Additional arguments passed to [shiny::sliderInput()].
+#' @param ... Additional arguments.
 #'
 #' @return A slider control that can be added to a UI definition.
 #' @export
 sliderInput2 <- function(inputId, label, min, max, value, step = NULL, round = FALSE,
-                         format = NULL, locale = "us", ticks = TRUE, animate = FALSE,
+                         ticks = TRUE, animate = FALSE,
                          width = NULL, sep = ",", pre = NULL, post = NULL,
                          timeFormat = NULL, timezone = NULL, dragRange = TRUE,
                          subgroups = character(0), ...) {
   register_input(inputId, "slider", subgroups)
   shiny::sliderInput(
     inputId = inputId, label = label, min = min, max = max, value = value,
-    step = step, round = round, format = format, locale = locale, ticks = ticks,
+    step = step, round = round, ticks = ticks,
     animate = animate, width = width, sep = sep, pre = pre, post = post,
-    timeFormat = timeFormat, timezone = timezone, dragRange = dragRange, ...
+    timeFormat = timeFormat, timezone = timezone, dragRange = dragRange
   )
 }
 
