@@ -1,7 +1,7 @@
 Package: BindableWidgets
 Type: Package
 Title: Two-Way Bindable UI Widgets and Reactive App State Management for Shiny
-Version: 0.1.0
+Version: 0.2.0
 Author: Jay Warrick [aut, cre]
 Maintainer: Jay Warrick <jay.warrick@gmail.com>
 Description: Provides two-way reactive-bound inputs (numericInput2, textInput2, 

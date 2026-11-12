@@ -49,15 +49,34 @@ bindableTableInput <- function(inputId,
                                enable_groups = TRUE,
                                subgroups = character(0),
                                width = "100%",
-                               height = NULL) {
+                               height = NULL,
+                               ...) {
   # Register widget for automatic state management
   register_input(inputId, "table", subgroups)
 
+  extra_args <- list(...)
+
   # Resolve data / value alias
-  actual_data <- if (!is.null(value)) value else data
+  actual_data <- if (!is.null(value)) value else if (!is.null(data)) data else extra_args$data
 
   # Resolve allow_grouping / enable_groups alias
-  is_grouping_allowed <- if (!missing(allow_grouping)) isTRUE(allow_grouping) else isTRUE(enable_groups)
+  is_grouping_allowed <- if (!missing(allow_grouping)) {
+    isTRUE(allow_grouping)
+  } else if (!missing(enable_groups)) {
+    isTRUE(enable_groups)
+  } else if (!is.null(extra_args$allow_grouping)) {
+    isTRUE(extra_args$allow_grouping)
+  } else {
+    TRUE
+  }
+
+  # If columns was omitted, check if column definitions were passed via ...
+  if (is.null(columns) && length(extra_args) > 0) {
+    candidate_cols <- extra_args[vapply(extra_args, is.list, logical(1))]
+    if (length(candidate_cols) > 0) {
+      columns <- candidate_cols
+    }
+  }
 
   # Fallback default columns if omitted
   if (is.null(columns)) {
