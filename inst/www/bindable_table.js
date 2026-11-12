@@ -490,11 +490,45 @@
           const gid = target.getAttribute('data-group-id');
           const reps = Math.max(1, parseInt(target.value, 10) || 1);
           target.value = reps;
+          const targetGid = parseInt(gid, 10);
           for (const r of this.rows) {
-            if (r._group_id === gid) r._repeats = reps;
+            if (r._group_id === targetGid || String(r._group_id) === String(gid)) {
+              r._repeats = reps;
+            }
           }
           this.updateToolbarState();
           this.notifyShiny();
+        }
+      });
+
+      // Immediate reactive updates on spinner arrows (runner buttons) & keystrokes
+      this.container.addEventListener('input', (e) => {
+        const target = e.target;
+        if (target.classList.contains('bindable-repeat-input')) {
+          const gid = target.getAttribute('data-group-id');
+          const reps = Math.max(1, parseInt(target.value, 10) || 1);
+          const targetGid = parseInt(gid, 10);
+          for (const r of this.rows) {
+            if (r._group_id === targetGid || String(r._group_id) === String(gid)) {
+              r._repeats = reps;
+            }
+          }
+          this.updateToolbarState();
+          this.notifyShiny();
+        } else if (target.classList.contains('bindable-input')) {
+          const idx = parseInt(target.getAttribute('data-index'), 10);
+          const col = target.getAttribute('data-col');
+          if (this.rows[idx]) {
+            const colDef = this.schema[col];
+            if (colDef && colDef.type === 'numeric' && target.value !== '') {
+              const numVal = Number(target.value);
+              if (!isNaN(numVal)) {
+                this.rows[idx][col] = numVal;
+                this.updateToolbarState();
+                this.notifyShiny();
+              }
+            }
+          }
         }
       });
 
