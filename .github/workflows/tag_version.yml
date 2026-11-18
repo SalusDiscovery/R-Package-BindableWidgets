@@ -1,0 +1,17 @@
+name: Auto-tag Version
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  call-tagger:
+    uses: Salus-Discovery/.github/.github/workflows/universal_tag.yml@main
+    permissions:
+      contents: write
+    with:
+      initial_seed_version: 'v0.2.0'
